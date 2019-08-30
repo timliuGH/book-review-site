@@ -49,3 +49,27 @@ def register():
     # Display default register page
     elif request.method == "GET":
         return render_template("register.html")
+
+@app.route('/login', methods=["GET", "POST"])
+def login():
+    """Log user in"""
+    if request.method == "POST":
+        # Save submitted username and password
+        form_username = request.form.get("username")
+        form_password = request.form.get("password")
+
+        # Find username in database
+        row = db.execute("SELECT username, password FROM users WHERE username=:username",
+            {"username": form_username}).fetchone()
+
+        # Handle case where username does not exist
+        if row == None:
+            return render_template("login.html", message="We don't know this Glow Worm!")
+
+        # Handle incorrect password
+        if row.password != form_password:
+            return render_template("login.html", message="Incorrect password!")
+
+        return "TODO"
+    elif request.method == "GET":
+        return render_template("login.html")
