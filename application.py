@@ -41,11 +41,11 @@ def register():
         if check_username != None:
             return render_template("register.html", message="Username already taken!")
 
-        # Add username and password to table
+        # Add username and password to table and send user to login page
         db.execute("INSERT INTO users (username, password) \
         VALUES (:username, :password)", {"username": username, "password": password})
         db.commit()
-        return render_template("register.html", message="Thanks for registering!")
+        return redirect("/login")
 
     # Display default register page
     elif request.method == "GET":
@@ -89,6 +89,7 @@ def index():
     else:
         #row = db.execute("SELECT username FROM users WHERE id=:user_id", {"user_id": user_id })
         return render_template("index.html")
+
 
 @app.route("/logout")
 def logout():
