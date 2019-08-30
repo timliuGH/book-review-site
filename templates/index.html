@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+{% block title %}Glow Worm Portal{% endblock %}
+{% block body %}
+    <ul class="nav justify-content-end">
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+        </li>
+    </ul>
+{% endblock %}

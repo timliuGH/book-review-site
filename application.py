@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, session, render_template, request
+from flask import Flask, session, render_template, request, redirect
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -22,8 +22,9 @@ db = scoped_session(sessionmaker(bind=engine))
 
 
 @app.route("/")
-def index():
-    return render_template("index.html")
+def home():
+    session.clear()
+    return render_template("home.html")
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -50,6 +51,7 @@ def register():
     elif request.method == "GET":
         return render_template("register.html")
 
+
 @app.route('/login', methods=["GET", "POST"])
 def login():
     """Log user in"""
@@ -59,7 +61,7 @@ def login():
         form_password = request.form.get("password")
 
         # Find username in database
-        row = db.execute("SELECT username, password FROM users WHERE username=:username",
+        row = db.execute("SELECT id, username, password FROM users WHERE username=:username",
             {"username": form_username}).fetchone()
 
         # Handle case where username does not exist
@@ -70,6 +72,26 @@ def login():
         if row.password != form_password:
             return render_template("login.html", message="Incorrect password!")
 
-        return "TODO"
+        # Handle correct password, i.e. log in user
+        session["user_id"] = row.id
+        return redirect("/index")
+
     elif request.method == "GET":
         return render_template("login.html")
+
+
+@app.route("/index")
+def index():
+    """Display page after user logs in"""
+    user_id = session.get("user_id")
+    if user_id is None:
+        return render_template("home.html")
+    else:
+        #row = db.execute("SELECT username FROM users WHERE id=:user_id", {"user_id": user_id })
+        return render_template("index.html")
+
+@app.route("/logout")
+def logout():
+    """Log user out"""
+    session.clear()
+    return redirect("/")
