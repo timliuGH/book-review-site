@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, session
+from flask import Flask, session, render_template, request
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -23,4 +23,29 @@ db = scoped_session(sessionmaker(bind=engine))
 
 @app.route("/")
 def index():
-    return "Project 1: TODO"
+    return render_template("index.html")
+
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    """Register user with username and password"""
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        # Handle if username already exists
+        check_username = db.execute("SELECT username FROM users \
+            WHERE username=:username", {"username": username}).fetchone()
+        db.commit()
+        if check_username != None:
+            return render_template("register.html", message="Username already taken!")
+
+        # Add username and password to table
+        db.execute("INSERT INTO users (username, password) \
+        VALUES (:username, :password)", {"username": username, "password": password})
+        db.commit()
+        return render_template("register.html", message="Thanks for registering!")
+
+    # Display default register page
+    elif request.method == "GET":
+        return render_template("register.html")
