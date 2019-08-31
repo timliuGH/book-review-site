@@ -61,33 +61,32 @@ def login():
         form_password = request.form.get("password")
 
         # Find username in database
-        row = db.execute("SELECT id, username, password FROM users WHERE username=:username",
+        user = db.execute("SELECT id, username, password FROM users WHERE username=:username",
             {"username": form_username}).fetchone()
 
         # Handle case where username does not exist
-        if row == None:
+        if user == None:
             return render_template("login.html", message="We don't know this Glow Worm!")
 
         # Handle incorrect password
-        if row.password != form_password:
+        if user.password != form_password:
             return render_template("login.html", message="Incorrect password!")
 
         # Handle correct password, i.e. log in user
-        session["user_id"] = row.id
+        session["user_id"] = user.id
         return redirect("/index")
 
     elif request.method == "GET":
         return render_template("login.html")
 
 
-@app.route("/index")
+@app.route("/index", methods=["GET", "POST"])
 def index():
     """Display page after user logs in"""
     user_id = session.get("user_id")
     if user_id is None:
         return render_template("home.html")
     else:
-        #row = db.execute("SELECT username FROM users WHERE id=:user_id", {"user_id": user_id })
         return render_template("index.html")
 
 
@@ -96,3 +95,32 @@ def logout():
     """Log user out"""
     session.clear()
     return redirect("/")
+
+
+@app.route("/search", methods=["POST"])
+def search():
+    """Display search results"""
+    title = request.form.get("title").title()
+    author = request.form.get("author").title()
+    isbn = request.form.get("isbn")
+
+    if title == "" and author == "" and isbn == "":
+        return render_template("index.html")
+
+    books = set()
+    if title != "":
+        title_matches = db.execute("SELECT * FROM books WHERE title LIKE :title", {"title": '%' + title + '%'}).fetchall()
+        for book in title_matches:
+            books.add(tuple(book))
+    if author != "":
+        author_matches = db.execute("SELECT * FROM books WHERE author LIKE :author", {"author": '%' + author + '%'}).fetchall()
+        for book in author_matches:
+            books.add(tuple(book))
+    if isbn != "":
+        isbn_matches = db.execute("SELECT * FROM books WHERE isbn LIKE :isbn", {"isbn": '%' + isbn + '%'}).fetchall()
+        for book in isbn_matches:
+            books.add(tuple(book))
+    print("num books:")
+    print(len(books))
+
+    return render_template("index.html", books=books, count=len(books))

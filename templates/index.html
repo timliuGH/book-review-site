@@ -6,4 +6,58 @@
             <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
         </li>
     </ul>
+
+    <h1 class="text-center">Book Search</h1>
+    <form action="/search" method="post">
+        <div class="form-group row">
+            <label for="title" class="col-sm-2 col-form-label text-right">Title:</label>
+            <div class="col-sm-9">
+                <input class="form-control" type="text" name="title" id="title" placeholder="The Very Hungry Caterpillar" autofocus>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="author" class="col-sm-2 col-form-label text-right">Author:</label>
+            <div class="col-sm-9">
+                <input class="form-control" type="text" name="author" id="author" placeholder="Eric Carle">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="isbn" class="col-sm-2 col-form-label text-right">ISBN:</label>
+            <div class="col-sm-9">
+                <input class="form-control" type="text" name="isbn" id="isbn" placeholder="0241003008">
+            </div>
+        </div>
+        <div>
+            <p class="text-center lead">{{ message }}</p>
+        </div>
+        <div class="form-group row justify-content-center">
+            <button type="submit" class="btn btn-primary">Search!</button>
+        </div>
+    </form>
+
+    {% if books %}
+    <table class="table table-hover table-sm">
+        <thead class="table-info">
+            <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Year</th>
+                <th>ISBN</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+            <tr>
+                <td>{{ book[2] }}</td>
+                <td>{{ book[3] }}</td>
+                <td>{{ book[4] }}</td>
+                <td>{{ book[1] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+    {% if count == 0 %}
+        <h1>No results!</h1>
+    {% endif %}
 {% endblock %}
