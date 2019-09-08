@@ -135,17 +135,24 @@ def logout():
     return redirect("/")
 
 
-@app.route("/book/<int:book_id>")
+@app.route("/book/<int:book_id>", methods=["GET", "POST"])
 def book(book_id):
-    """List details about a single book"""
+    """GET: List details about a single book
+       POST: Add user review to database and update page"""
     # Ensure user is logged in
     user_id = session.get("user_id")
     if user_id is None:
         return render_template("login.html", message="Please log in!")
-    else:
-        book = db.execute("SELECT * FROM books WHERE id=:book_id", {"book_id": book_id}).fetchone()
-        review = db.execute("SELECT * FROM reviews WHERE book_id=:book_id", {"book_id": book_id}).fetchone()
-        return render_template("book.html", book=book, review=review)
+    if request.method == "POST":
+        rating = request.form.get("rating")
+        review = request.form.get("review")
+        db.execute("INSERT INTO reviews (user_id, book_id, review, rating) \
+            VALUES (:user_id, :book_id, :review, :rating)",
+            {"user_id": user_id, "book_id": book_id, "review": review, "rating": rating})
+    book = db.execute("SELECT * FROM books WHERE id=:book_id", {"book_id": book_id}).fetchone()
+    reviews = db.execute("SELECT * FROM reviews WHERE book_id=:book_id", {"book_id": book_id}).fetchall()
+    db.commit()
+    return render_template("book.html", book=book, reviews=reviews)
 
 
 @app.route("/post_review/<int:book_id>", methods=["POST"])

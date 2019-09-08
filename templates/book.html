@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+{% block title %}{{ book.title }}{% endblock %}
+{% block body %}
+    <ul class="nav justify-content-end">
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('index') }}">Search</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+        </li>
+    </ul>
+
+    <div class="text-center">
+        <h1>{{ book.title }}</h1>
+        <h2>By {{ book.author }}</h2>
+        ISBN: {{ book.isbn }}<br>
+        Published {{ book.year }}
+    </div>
+
+    <form action="{{ url_for('book', book_id=book.id) }}" method="post">
+        <div class="form-group row">
+            <label for="rating" class="col-sm-3 col-form-label text-right">Your Glow Worm Rating</label>
+            <div class="col-sm-9">
+                <input class="form-control" type="number" name="rating" id="rating" min="1" max="5" placeholder="On scale of 1 to 5" autofocus required>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="review" class="col-sm-3 col-form-label text-right">Your Glow Worm Review</label>
+            <div class="col-sm-9">
+                <textarea class="form-control" name="review" id="review" placeholder="This book was great! However.." rows="5" required></textarea>
+            </div>
+        </div>
+        <div class="form-group row justify-content-center">
+            <button type="submit" class="btn btn-primary">Submit Review!</button>
+        </div>
+    </form>
+
+    <h1>Reviews</h1>
+    {% if reviews == None %}
+        <p class="lead">No reviews yet!</p>
+    {% elif reviews %}
+        <table class="table table-hover table-bordered">
+            <thead class="text-center">
+                <tr>
+                    <th>Rating<br>(Out of 5)</th>
+                    <th>Glow Worm Review</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for review in reviews %}
+                <tr>
+                    <td class="text-center">{{ review.rating }}</td>
+                    <td>{{ review.review }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+{% endblock %}
