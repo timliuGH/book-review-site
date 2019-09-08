@@ -14,9 +14,12 @@
         <h1>{{ book.title }}</h1>
         <h2>By {{ book.author }}</h2>
         ISBN: {{ book.isbn }}<br>
-        Published {{ book.year }}
+        Published {{ book.year }}<br>
     {% if goodreads %}
-        <p class="lead">Goodreads Average Rating: {{ goodreads['average_rating'] }} over {{ goodreads['work_ratings_count'] }} ratings</p>
+        Goodreads Average Rating: {{ goodreads['average_rating'] }} over {{ goodreads['work_ratings_count'] }} ratings<br>
+    {% endif %}
+    {% if avg_ratings and num_ratings %}
+        Glow Worms Average Rating: {{ avg_rating }} over {{ num_ratings }} ratings
     {% endif %}
     </div>
 
@@ -45,6 +48,7 @@
         <table class="table table-hover table-bordered">
             <thead class="text-center">
                 <tr>
+                    <th>Glow Worm</th>
                     <th>Rating<br>(Out of 5)</th>
                     <th>Glow Worm Review</th>
                 </tr>
@@ -52,6 +56,7 @@
             <tbody>
                 {% for review in reviews %}
                 <tr>
+                    <td class="text-center">{{ review.username }}</td>
                     <td class="text-center">{{ review.rating }}</td>
                     <td>{{ review.review }}</td>
                 </tr>

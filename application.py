@@ -163,11 +163,23 @@ def book(book_id):
 
     # Display most current details and reviews for current book
     book = db.execute("SELECT * FROM books WHERE id=:book_id", {"book_id": book_id}).fetchone()
-    reviews = db.execute("SELECT * FROM reviews WHERE book_id=:book_id", {"book_id": book_id}).fetchall()
+    reviews = db.execute("SELECT * FROM reviews JOIN users ON users.id=reviews.user_id WHERE book_id=:book_id",
+        {"book_id": book_id}).fetchall()
+    avg_rating = db.execute("SELECT AVG(rating) FROM reviews WHERE book_id=:book_id", {"book_id": book_id}).fetchone()
+    print(avg_rating)
+    if avg_rating[0] != None:
+        avg_rating = round(float(avg_rating[0]), 2)
+    else:
+        avg_rating = None
+    num_ratings = db.execute("SELECT COUNT(*) FROM reviews GROUP BY book_id HAVING book_id=:book_id", {"book_id": book_id}).fetchone()
+    if num_ratings != None:
+        num_ratings = num_ratings[0]
+    else:
+        num_ratings = None
     goodreads = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": KEY, "isbns": book.isbn}).json()
     print(goodreads['books'][0]['average_rating'])
     db.commit()
-    return render_template("book.html", book=book, reviews=reviews, goodreads=goodreads['books'][0])
+    return render_template("book.html", book=book, reviews=reviews, goodreads=goodreads['books'][0], avg_rating=avg_rating, num_ratings=num_ratings)
 
 
 @app.route("/api/book/<isbn>")
