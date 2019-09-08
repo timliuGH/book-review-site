@@ -23,13 +23,16 @@ db = scoped_session(sessionmaker(bind=engine))
 
 @app.route("/")
 def home():
+    """Initial landing page; logs off last user"""
     session.clear()
     return render_template("home.html")
 
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    """Register user with username and password"""
+    """GET: Display registration page
+       POST: Register new user"""
+
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
@@ -47,16 +50,16 @@ def register():
         db.commit()
         return redirect("/login")
 
-    # Display default register page
     elif request.method == "GET":
         return render_template("register.html")
 
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
-    """Log user in"""
+    """GET: Display login page
+       POST: Log user in"""
+
     if request.method == "POST":
-        # Save submitted username and password
         form_username = request.form.get("username")
         form_password = request.form.get("password")
 
@@ -82,31 +85,33 @@ def login():
 
 @app.route("/index", methods=["GET", "POST"])
 def index():
-    """Display page after user logs in"""
-    user_id = session.get("user_id")
-    if user_id is None:
-        return render_template("home.html")
-    else:
-        return render_template("index.html")
+    """GET: Display user's initial page after logging in
+       POST: Display search results"""
+
+    if request.method == "GET":
+        # Ensure user is logged in
+        user_id = session.get("user_id")
+        if user_id is None:
+            return render_template("login.html", message="Please log in!")
+        else:
+            return render_template("index.html")
+    elif request.method == "POST":
+        title = request.form.get("title").title()
+        author = request.form.get("author").title()
+        isbn = request.form.get("isbn")
+
+        # Handle blank queries
+        if title == "" and author == "" and isbn == "":
+            return render_template("index.html")
+
+        # Get books that match queries
+        books = search(title, author, isbn)
+        return render_template("index.html", books=books, count=len(books))
 
 
-@app.route("/logout")
-def logout():
-    """Log user out"""
-    session.clear()
-    return redirect("/")
-
-
-@app.route("/search", methods=["POST"])
-def search():
-    """Display search results"""
-    title = request.form.get("title").title()
-    author = request.form.get("author").title()
-    isbn = request.form.get("isbn")
-
-    if title == "" and author == "" and isbn == "":
-        return render_template("index.html")
-
+def search(title, author, isbn):
+    """Search for books based on user query"""
+    # Collect unique results from each query option (title, author, isbn)
     books = set()
     if title != "":
         title_matches = db.execute("SELECT * FROM books WHERE title LIKE :title", {"title": '%' + title + '%'}).fetchall()
@@ -120,7 +125,33 @@ def search():
         isbn_matches = db.execute("SELECT * FROM books WHERE isbn LIKE :isbn", {"isbn": '%' + isbn + '%'}).fetchall()
         for book in isbn_matches:
             books.add(tuple(book))
-    print("num books:")
-    print(len(books))
+    return books
 
-    return render_template("index.html", books=books, count=len(books))
+
+@app.route("/logout")
+def logout():
+    """Log user out and send user to initial landing page"""
+    session.clear()
+    return redirect("/")
+
+
+@app.route("/book/<int:book_id>")
+def book(book_id):
+    """List details about a single book"""
+    # Ensure user is logged in
+    user_id = session.get("user_id")
+    if user_id is None:
+        return render_template("login.html", message="Please log in!")
+    else:
+        book = db.execute("SELECT * FROM books WHERE id=:book_id", {"book_id": book_id}).fetchone()
+        review = db.execute("SELECT * FROM reviews WHERE book_id=:book_id", {"book_id": book_id}).fetchone()
+        return render_template("book.html", book=book, review=review)
+
+
+@app.route("/post_review/<int:book_id>", methods=["POST"])
+def post_review(book_id):
+    stars = request.form.get("stars")
+    review = request.form.get("review")
+    db.execute("INSERT INTO reviews (stars, review) VALUES (:stars, :review)",
+        {"stars": stars, "review": review})
+    return redirect("/book", book_id=book_id)
