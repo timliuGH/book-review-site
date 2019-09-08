@@ -1,9 +1,10 @@
-import os
+import os, requests
 
 from flask import Flask, session, render_template, request, redirect
 from flask_session import Session
 from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import scoped_session, sessionmaker
+from goodreads_api_key import KEY
 
 app = Flask(__name__)
 
@@ -163,5 +164,7 @@ def book(book_id):
     # Display most current details and reviews for current book
     book = db.execute("SELECT * FROM books WHERE id=:book_id", {"book_id": book_id}).fetchone()
     reviews = db.execute("SELECT * FROM reviews WHERE book_id=:book_id", {"book_id": book_id}).fetchall()
+    goodreads = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": KEY, "isbns": book.isbn}).json()
+    print(goodreads['books'][0]['average_rating'])
     db.commit()
-    return render_template("book.html", book=book, reviews=reviews)
+    return render_template("book.html", book=book, reviews=reviews, goodreads=goodreads['books'][0])

@@ -15,6 +15,9 @@
         <h2>By {{ book.author }}</h2>
         ISBN: {{ book.isbn }}<br>
         Published {{ book.year }}
+    {% if goodreads %}
+        <p class="lead">Goodreads Average Rating: {{ goodreads['average_rating'] }} over {{ goodreads['work_ratings_count'] }} ratings</p>
+    {% endif %}
     </div>
 
     <form action="{{ url_for('book', book_id=book.id) }}" method="post">
