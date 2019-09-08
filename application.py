@@ -2,7 +2,7 @@ import os
 
 from flask import Flask, session, render_template, request, redirect
 from flask_session import Session
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 app = Flask(__name__)
@@ -146,19 +146,22 @@ def book(book_id):
     if request.method == "POST":
         rating = request.form.get("rating")
         review = request.form.get("review")
-        db.execute("INSERT INTO reviews (user_id, book_id, review, rating) \
-            VALUES (:user_id, :book_id, :review, :rating)",
-            {"user_id": user_id, "book_id": book_id, "review": review, "rating": rating})
+
+        # Check if current user has already made a review on current book
+        existing_row = db.execute("SELECT * FROM reviews \
+            WHERE user_id=:user_id AND book_id=:book_id",
+            {"user_id": user_id, "book_id": book_id}).fetchone()
+        if existing_row == None:
+            db.execute("INSERT INTO reviews (user_id, book_id, review, rating) \
+                VALUES (:user_id, :book_id, :review, :rating)",
+                {"user_id": user_id, "book_id": book_id, "review": review, "rating": rating})
+        else:
+            db.execute("UPDATE reviews SET review=:review, rating=:rating \
+                WHERE user_id=:user_id AND book_id=:book_id",
+                {"review": review, "rating": rating, "user_id": user_id, "book_id": book_id})
+
+    # Display most current details and reviews for current book
     book = db.execute("SELECT * FROM books WHERE id=:book_id", {"book_id": book_id}).fetchone()
     reviews = db.execute("SELECT * FROM reviews WHERE book_id=:book_id", {"book_id": book_id}).fetchall()
     db.commit()
     return render_template("book.html", book=book, reviews=reviews)
-
-
-@app.route("/post_review/<int:book_id>", methods=["POST"])
-def post_review(book_id):
-    stars = request.form.get("stars")
-    review = request.form.get("review")
-    db.execute("INSERT INTO reviews (stars, review) VALUES (:stars, :review)",
-        {"stars": stars, "review": review})
-    return redirect("/book", book_id=book_id)
