@@ -1,6 +1,6 @@
 import os, requests
 
-from flask import Flask, session, render_template, request, redirect
+from flask import Flask, session, render_template, request, redirect, jsonify
 from flask_session import Session
 from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -168,3 +168,32 @@ def book(book_id):
     print(goodreads['books'][0]['average_rating'])
     db.commit()
     return render_template("book.html", book=book, reviews=reviews, goodreads=goodreads['books'][0])
+
+
+@app.route("/api/book/<isbn>")
+def book_api(isbn):
+    """Return book title, author, publication date, ISBN number, review count,
+       and average rating in JSON format"""
+
+    # Get book details based on isbn in http request
+    book_details = db.execute("SELECT id, title, author, year FROM books WHERE isbn=:isbn",
+        {"isbn": isbn}).fetchone()
+
+    # Get number of reviews
+    review_count = db.execute("SELECT COUNT(*) FROM reviews GROUP BY book_id HAVING book_id=:book_id",
+        {"book_id": book_details['id']}).fetchone()
+
+    # Get average book rating
+    average_rating = db.execute("SELECT AVG(rating) FROM reviews WHERE book_id=:book_id",
+        {"book_id": book_details['id']}).fetchone()
+    # Convert to float so can be put in JSON format
+    average_rating = round(float(average_rating[0]), 2)
+
+    return jsonify({
+            "title": book_details['title'],
+            "author": book_details['author'],
+            "year": book_details['year'],
+            "isbn": isbn,
+            "review_count": review_count[0],
+            "average_rating": average_rating
+        })
