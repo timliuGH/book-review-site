@@ -49,7 +49,7 @@ def register():
         db.execute("INSERT INTO users (username, password) \
         VALUES (:username, :password)", {"username": username, "password": password})
         db.commit()
-        return redirect("/login")
+        return render_template("login.html", new_user="Thanks for registering!")
 
     elif request.method == "GET":
         return render_template("register.html")
@@ -70,7 +70,7 @@ def login():
 
         # Handle case where username does not exist
         if user == None:
-            return render_template("login.html", message="We don't know this Glow Worm!")
+            return render_template("login.html", message="We don't know this Book Worm!")
 
         # Handle incorrect password
         if user.password != form_password:
@@ -182,7 +182,7 @@ def book(book_id):
     return render_template("book.html", book=book, reviews=reviews, goodreads=goodreads['books'][0], avg_rating=avg_rating, num_ratings=num_ratings)
 
 
-@app.route("/api/book/<isbn>")
+@app.route("/api/<isbn>")
 def book_api(isbn):
     """Return book title, author, publication date, ISBN number, review count,
        and average rating in JSON format"""
@@ -190,6 +190,10 @@ def book_api(isbn):
     # Get book details based on isbn in http request
     book_details = db.execute("SELECT id, title, author, year FROM books WHERE isbn=:isbn",
         {"isbn": isbn}).fetchone()
+    print("book_details")
+    if book_details == None:
+        print("heyo")
+        return render_template("error.html"), 404
 
     # Get number of reviews
     review_count = db.execute("SELECT COUNT(*) FROM reviews GROUP BY book_id HAVING book_id=:book_id",

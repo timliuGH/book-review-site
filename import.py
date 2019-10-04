@@ -1,3 +1,5 @@
+"""This program sets up the dabatase for the Book Worm Reviews website"""
+
 import csv
 import os
 
