@@ -19,19 +19,19 @@
         Goodreads Average Rating: {{ goodreads['average_rating'] }} over {{ goodreads['work_ratings_count'] }} ratings<br>
     {% endif %}
     {% if avg_ratings and num_ratings %}
-        Glow Worms Average Rating: {{ avg_rating }} over {{ num_ratings }} ratings
+        Book Worms Average Rating: {{ avg_rating }} over {{ num_ratings }} ratings
     {% endif %}
     </div>
 
     <form action="{{ url_for('book', book_id=book.id) }}" method="post">
         <div class="form-group row">
-            <label for="rating" class="col-sm-3 col-form-label text-right">Your Glow Worm Rating</label>
+            <label for="rating" class="col-sm-3 col-form-label text-right">Your Book Worm Rating</label>
             <div class="col-sm-9">
                 <input class="form-control" type="number" name="rating" id="rating" min="1" max="5" placeholder="On scale of 1 to 5" autofocus required>
             </div>
         </div>
         <div class="form-group row">
-            <label for="review" class="col-sm-3 col-form-label text-right">Your Glow Worm Review</label>
+            <label for="review" class="col-sm-3 col-form-label text-right">Your Book Worm Review</label>
             <div class="col-sm-9">
                 <textarea class="form-control" name="review" id="review" placeholder="This book was great! However.." rows="5" required></textarea>
             </div>
@@ -48,9 +48,9 @@
         <table class="table table-hover table-bordered">
             <thead class="text-center">
                 <tr>
-                    <th>Glow Worm</th>
+                    <th>Book Worm</th>
                     <th>Rating<br>(Out of 5)</th>
-                    <th>Glow Worm Review</th>
+                    <th>Book Worm Review</th>
                 </tr>
             </thead>
             <tbody>
