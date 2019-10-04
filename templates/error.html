@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block title %}404 Not Found {% endblock %}
+{% block body %}
+  <div class="jumbotron jumbotron-fluid text-center">
+    <h1 class="display-3">Whoa whoa whoa</h1>
+    <p class="lead">Did you get lost, fellow Book Worm?</p>
+    <p class="lead">Try a different ISBN.</p>
+    <p class="lead">Or <a class="" href="{{ url_for('index') }}">look one up</a>.</p>
+  </div>
+{% endblock %}
