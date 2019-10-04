@@ -1,4 +1,5 @@
-import os, requests
+import os
+import requests
 
 from flask import Flask, session, render_template, request, redirect, jsonify
 from flask_session import Session
