@@ -10,7 +10,7 @@ Flask-Session==0.3.1
 idna==2.8
 itsdangerous==1.1.0
 jellyfish==0.7.2
-Jinja2==2.10.1
+Jinja2==2.11.3
 lib50==2.0.0
 MarkupSafe==1.1.1
 pexpect==4.7.0
